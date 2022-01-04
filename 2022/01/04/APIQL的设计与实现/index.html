@@ -19,11 +19,11 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"raydroidx.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
 <meta name="description" content="一、背景目前向前端提供数据聚合的服务端API场景普遍有如下痛点：  服务端需要根据前端的需求不停的开发新版本接口，增加了开发与维护的成本； 服务端对返回契约做灵活动态切割成本较大，且不同终端平台要求存在差异； 类似GraphQL的框架可解决上述问题，但有较高的学习和掌握难度，而且实际应用中大多数场景前端只希望服务端能封装用于首屏的若干接口的串行或者并行调用顺序的处理逻辑。  因此，如果有一个针对数">
 <meta property="og:type" content="article">
 <meta property="og:title" content="APIQL的设计与实现">
-<meta property="og:url" content="http://example.com/2022/01/04/APIQL%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/index.html">
+<meta property="og:url" content="https://raydroidx.github.io/2022/01/04/APIQL%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/index.html">
 <meta property="og:site_name" content="Ray&#39;s博客">
 <meta property="og:description" content="一、背景目前向前端提供数据聚合的服务端API场景普遍有如下痛点：  服务端需要根据前端的需求不停的开发新版本接口，增加了开发与维护的成本； 服务端对返回契约做灵活动态切割成本较大，且不同终端平台要求存在差异； 类似GraphQL的框架可解决上述问题，但有较高的学习和掌握难度，而且实际应用中大多数场景前端只希望服务端能封装用于首屏的若干接口的串行或者并行调用顺序的处理逻辑。  因此，如果有一个针对数">
 <meta property="og:locale" content="zh_CN">
@@ -33,11 +33,11 @@
 <meta name="twitter:card" content="summary">
 
 
-<link rel="canonical" href="http://example.com/2022/01/04/APIQL%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/">
+<link rel="canonical" href="https://raydroidx.github.io/2022/01/04/APIQL%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/">
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-cn","comments":true,"permalink":"http://example.com/2022/01/04/APIQL%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/","path":"2022/01/04/APIQL的设计与实现/","title":"APIQL的设计与实现"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-cn","comments":true,"permalink":"https://raydroidx.github.io/2022/01/04/APIQL%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/","path":"2022/01/04/APIQL的设计与实现/","title":"APIQL的设计与实现"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
 <title>APIQL的设计与实现 | Ray's博客</title>
@@ -69,6 +69,7 @@
       <p class="site-title">Ray's博客</p>
       <i class="logo-line"></i>
     </a>
+      <p class="site-subtitle" itemprop="description">天助自助者</p>
   </div>
 
   <div class="site-nav-right">
@@ -164,7 +165,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-cn">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/01/04/APIQL%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/">
+    <link itemprop="mainEntityOfPage" href="https://raydroidx.github.io/2022/01/04/APIQL%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">

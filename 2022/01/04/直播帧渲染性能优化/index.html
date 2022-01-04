@@ -19,36 +19,36 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"raydroidx.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
 <meta name="description" content="一、背景为打造比肩甚至超越当前市面上主流的直播APP，我们对携程直播APP的帧渲染性能做了一些分析，并根据分析结果进行了一系列相关的优化。 二、现状分析1、开发者选项- GPU呈现模式分析在直播页面启用GPU呈现模式分析，截图如下：  在屏幕底部的每一个柱状条表示一帧的渲染耗时，耗时越多柱状条高度越高，可以看出大部分帧的耗时较高，柱状体条的颜色可以提示大概原因，比如上面的红色表示渲染命令耗时过多。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="直播帧渲染性能优化">
-<meta property="og:url" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/index.html">
+<meta property="og:url" content="https://raydroidx.github.io/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/index.html">
 <meta property="og:site_name" content="Ray&#39;s博客">
 <meta property="og:description" content="一、背景为打造比肩甚至超越当前市面上主流的直播APP，我们对携程直播APP的帧渲染性能做了一些分析，并根据分析结果进行了一系列相关的优化。 二、现状分析1、开发者选项- GPU呈现模式分析在直播页面启用GPU呈现模式分析，截图如下：  在屏幕底部的每一个柱状条表示一帧的渲染耗时，耗时越多柱状条高度越高，可以看出大部分帧的耗时较高，柱状体条的颜色可以提示大概原因，比如上面的红色表示渲染命令耗时过多。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/wx1.jpeg">
-<meta property="og:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/sys1.png">
-<meta property="og:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/sys2.png">
-<meta property="og:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/data0.png">
-<meta property="og:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/data1.png">
-<meta property="og:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/wx2.jpeg">
-<meta property="og:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/sys3.png">
-<meta property="og:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/sys4.png">
-<meta property="og:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/data3.png">
-<meta property="og:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/data4.png">
+<meta property="og:image" content="https://raydroidx.github.io/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/wx1.jpeg">
+<meta property="og:image" content="https://raydroidx.github.io/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/sys1.png">
+<meta property="og:image" content="https://raydroidx.github.io/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/sys2.png">
+<meta property="og:image" content="https://raydroidx.github.io/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/data0.png">
+<meta property="og:image" content="https://raydroidx.github.io/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/data1.png">
+<meta property="og:image" content="https://raydroidx.github.io/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/wx2.jpeg">
+<meta property="og:image" content="https://raydroidx.github.io/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/sys3.png">
+<meta property="og:image" content="https://raydroidx.github.io/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/sys4.png">
+<meta property="og:image" content="https://raydroidx.github.io/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/data3.png">
+<meta property="og:image" content="https://raydroidx.github.io/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/data4.png">
 <meta property="article:published_time" content="2022-01-04T08:18:22.000Z">
 <meta property="article:modified_time" content="2022-01-04T11:32:04.003Z">
 <meta property="article:author" content="Rui Jiang">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/wx1.jpeg">
+<meta name="twitter:image" content="https://raydroidx.github.io/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/wx1.jpeg">
 
 
-<link rel="canonical" href="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">
+<link rel="canonical" href="https://raydroidx.github.io/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-cn","comments":true,"permalink":"http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/","path":"2022/01/04/直播帧渲染性能优化/","title":"直播帧渲染性能优化"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-cn","comments":true,"permalink":"https://raydroidx.github.io/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/","path":"2022/01/04/直播帧渲染性能优化/","title":"直播帧渲染性能优化"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
 <title>直播帧渲染性能优化 | Ray's博客</title>
@@ -80,6 +80,7 @@
       <p class="site-title">Ray's博客</p>
       <i class="logo-line"></i>
     </a>
+      <p class="site-subtitle" itemprop="description">天助自助者</p>
   </div>
 
   <div class="site-nav-right">
@@ -175,7 +176,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-cn">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">
+    <link itemprop="mainEntityOfPage" href="https://raydroidx.github.io/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
