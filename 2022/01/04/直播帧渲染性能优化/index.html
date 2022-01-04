@@ -20,23 +20,38 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.9.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
-<meta property="og:type" content="website">
-<meta property="og:title" content="Ray&#39;s博客">
-<meta property="og:url" content="http://example.com/index.html">
+<meta name="description" content="一、背景为打造比肩甚至超越当前市面上主流的直播APP，我们对携程直播APP的帧渲染性能做了一些分析，并根据分析结果进行了一系列相关的优化。 二、现状分析1、开发者选项- GPU呈现模式分析在直播页面启用GPU呈现模式分析，截图如下：  在屏幕底部的每一个柱状条表示一帧的渲染耗时，耗时越多柱状条高度越高，可以看出大部分帧的耗时较高，柱状体条的颜色可以提示大概原因，比如上面的红色表示渲染命令耗时过多。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="直播帧渲染性能优化">
+<meta property="og:url" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/index.html">
 <meta property="og:site_name" content="Ray&#39;s博客">
+<meta property="og:description" content="一、背景为打造比肩甚至超越当前市面上主流的直播APP，我们对携程直播APP的帧渲染性能做了一些分析，并根据分析结果进行了一系列相关的优化。 二、现状分析1、开发者选项- GPU呈现模式分析在直播页面启用GPU呈现模式分析，截图如下：  在屏幕底部的每一个柱状条表示一帧的渲染耗时，耗时越多柱状条高度越高，可以看出大部分帧的耗时较高，柱状体条的颜色可以提示大概原因，比如上面的红色表示渲染命令耗时过多。">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/wx1.jpeg">
+<meta property="og:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/sys1.png">
+<meta property="og:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/sys2.png">
+<meta property="og:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/data0.png">
+<meta property="og:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/data1.png">
+<meta property="og:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/wx2.jpeg">
+<meta property="og:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/sys3.png">
+<meta property="og:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/sys4.png">
+<meta property="og:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/data3.png">
+<meta property="og:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/data4.png">
+<meta property="article:published_time" content="2022-01-04T08:18:22.000Z">
+<meta property="article:modified_time" content="2022-01-04T11:32:04.003Z">
 <meta property="article:author" content="Rui Jiang">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/wx1.jpeg">
 
 
-<link rel="canonical" href="http://example.com/">
+<link rel="canonical" href="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":true,"isPost":false,"lang":"zh-cn","comments":"","permalink":"","path":"index.html","title":""}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-cn","comments":true,"permalink":"http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/","path":"2022/01/04/直播帧渲染性能优化/","title":"直播帧渲染性能优化"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>Ray's博客</title>
+<title>直播帧渲染性能优化 | Ray's博客</title>
   
 
 
@@ -62,7 +77,7 @@
 
     <a href="/" class="brand" rel="start">
       <i class="logo-line"></i>
-      <h1 class="site-title">Ray's博客</h1>
+      <p class="site-title">Ray's博客</p>
       <i class="logo-line"></i>
     </a>
   </div>
@@ -90,7 +105,7 @@
 
   <aside class="sidebar">
 
-    <div class="sidebar-inner sidebar-overview-active">
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
       <ul class="sidebar-nav">
         <li class="sidebar-nav-toc">
           Table of Contents
@@ -103,6 +118,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">一、背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E7%8E%B0%E7%8A%B6%E5%88%86%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">二、现状分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1%E3%80%81%E5%BC%80%E5%8F%91%E8%80%85%E9%80%89%E9%A1%B9-GPU%E5%91%88%E7%8E%B0%E6%A8%A1%E5%BC%8F%E5%88%86%E6%9E%90"><span class="nav-number">2.1.</span> <span class="nav-text">1、开发者选项- GPU呈现模式分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2%E3%80%81%E4%BD%BF%E7%94%A8Systrace%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7"><span class="nav-number">2.2.</span> <span class="nav-text">2、使用Systrace分析工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3%E3%80%81%E4%BD%BF%E7%94%A8dumpsys-gfxinfo%E6%9F%A5%E7%9C%8B%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%95%B0%E6%8D%AE"><span class="nav-number">2.3.</span> <span class="nav-text">3、使用dumpsys gfxinfo查看帧渲染数据</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96"><span class="nav-number">3.</span> <span class="nav-text">三、性能优化</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1%E3%80%81%E4%BC%98%E5%8C%96%E8%AF%84%E8%AE%BA%E5%88%97%E8%A1%A8Adapter%EF%BC%8C%E4%BD%BF%E7%94%A8DiffUtils%E8%BF%9B%E8%A1%8C%E6%95%B0%E6%8D%AE%E5%B7%AE%E5%BC%82%E6%AF%94%E5%AF%B9%EF%BC%8C%E5%8F%AA%E6%9B%B4%E6%96%B0%E6%95%B0%E6%8D%AE%E5%AD%98%E5%9C%A8%E5%B7%AE%E5%BC%82%E7%9A%84%E9%83%A8%E5%88%86%EF%BC%8C%E5%AE%9E%E7%8E%B0%E7%95%8C%E9%9D%A2%E5%B1%80%E9%83%A8%E5%88%B7%E6%96%B0%EF%BC%9B"><span class="nav-number">3.1.</span> <span class="nav-text">1、优化评论列表Adapter，使用DiffUtils进行数据差异比对，只更新数据存在差异的部分，实现界面局部刷新；</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2%E3%80%81%E5%8E%BB%E6%8E%89%E8%AF%84%E8%AE%BA%E5%88%97%E8%A1%A8Adapter%E6%8F%92%E5%85%A5%E6%B6%88%E6%81%AF%E7%9A%84%E5%90%8C%E6%AD%A5%E6%96%B9%E6%B3%95%E9%94%81%EF%BC%8C%E9%81%BF%E5%85%8Dlock-unlock%E7%9A%84%E8%80%97%E6%97%B6%EF%BC%9B"><span class="nav-number">3.2.</span> <span class="nav-text">2、去掉评论列表Adapter插入消息的同步方法锁，避免lock&#x2F;unlock的耗时；</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3%E3%80%81%E4%BD%BF%E7%94%A8LinearLayout%E6%9B%BF%E6%8D%A2%E9%83%A8%E5%88%86RelativeLayout%EF%BC%9B"><span class="nav-number">3.3.</span> <span class="nav-text">3、使用LinearLayout替换部分RelativeLayout；</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4%E3%80%81Lottie%E5%8A%A8%E7%94%BB%E4%BC%98%E5%8C%96"><span class="nav-number">3.4.</span> <span class="nav-text">4、Lottie动画优化</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E4%BC%98%E5%8C%96%E7%BB%93%E6%9E%9C"><span class="nav-number">4.</span> <span class="nav-text">四、优化结果</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E6%80%BB%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">五、总结</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -148,16 +164,17 @@
 </noscript>
 
 
-    <div class="main-inner index posts-expand">
+    <div class="main-inner post posts-expand">
 
-    
+
+  
 
 
 <div class="post-block">
   
   
 
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-cn">
     <link itemprop="mainEntityOfPage" href="http://example.com/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -170,9 +187,9 @@
       <meta itemprop="name" content="Ray's博客">
     </span>
       <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" class="post-title-link" itemprop="url">直播帧渲染性能优化</a>
-        </h2>
+        <h1 class="post-title" itemprop="name headline">
+          直播帧渲染性能优化
+        </h1>
 
         <div class="post-meta-container">
           <div class="post-meta">
@@ -205,7 +222,7 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h1><p>为打造比肩甚至超越当前市面上主流的直播APP，我们对携程直播APP的帧渲染性能做了一些分析，并根据分析结果进行了一系列相关的优化。</p>
+        <h1 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h1><p>为打造比肩甚至超越当前市面上主流的直播APP，我们对携程直播APP的帧渲染性能做了一些分析，并根据分析结果进行了一系列相关的优化。</p>
 <h1 id="二、现状分析"><a href="#二、现状分析" class="headerlink" title="二、现状分析"></a>二、现状分析</h1><h2 id="1、开发者选项-GPU呈现模式分析"><a href="#1、开发者选项-GPU呈现模式分析" class="headerlink" title="1、开发者选项- GPU呈现模式分析"></a>1、开发者选项- GPU呈现模式分析</h2><p>在直播页面启用GPU呈现模式分析，截图如下：</p>
 <img src="/2022/01/04/%E7%9B%B4%E6%92%AD%E5%B8%A7%E6%B8%B2%E6%9F%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/wx1.jpeg" class="">
 <p>在屏幕底部的每一个柱状条表示一帧的渲染耗时，耗时越多柱状条高度越高，可以看出大部分帧的耗时较高，柱状体条的颜色可以提示大概原因，比如上面的红色表示渲染命令耗时过多。</p>
@@ -252,7 +269,6 @@
 <p>可以看出，此次帧渲染性能优化效果显著。</p>
 <h1 id="五、总结"><a href="#五、总结" class="headerlink" title="五、总结"></a>五、总结</h1><p>为打造比肩甚至超越当前市面上主流的直播APP，我们应时刻关注应用的性能，毕竟代码任何一个小点都可能对应用性能造成很大的影响。</p>
 
-      
     </div>
 
     
@@ -260,208 +276,22 @@
     
 
     <footer class="post-footer">
-        <div class="post-eof"></div>
-      
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/01/04/APIQL%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/" rel="prev" title="APIQL的设计与实现">
+                  <i class="fa fa-chevron-left"></i> APIQL的设计与实现
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
     </footer>
   </article>
 </div>
 
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/01/04/APIQL%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Rui Jiang">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ray's博客">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2022/01/04/APIQL%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/" class="post-title-link" itemprop="url">APIQL的设计与实现</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-      
-
-      <time title="Created: 2022-01-04 15:49:58 / Modified: 15:50:53" itemprop="dateCreated datePublished" datetime="2022-01-04T15:49:58+08:00">2022-01-04</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">In</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%85%B6%E5%AE%83/" itemprop="url" rel="index"><span itemprop="name">其它</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h1 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h1><p>目前向前端提供数据聚合的服务端API场景普遍有如下痛点：</p>
-<ol>
-<li>服务端需要根据前端的需求不停的开发新版本接口，增加了开发与维护的成本；</li>
-<li>服务端对返回契约做灵活动态切割成本较大，且不同终端平台要求存在差异；</li>
-<li>类似GraphQL的框架可解决上述问题，但有较高的学习和掌握难度，而且实际应用中大多数场景前端只希望服务端能封装用于首屏的若干接口的串行或者并行调用顺序的处理逻辑。</li>
-</ol>
-<p>因此，如果有一个针对数据聚合场景的类 GraphQL引擎接口，解决上述痛点，能够极大降低前端数据聚合接口(BFF API)的开发和运维成本。</p>
-<h1 id="二、设计思路"><a href="#二、设计思路" class="headerlink" title="二、设计思路"></a>二、设计思路</h1><p>基于上述背景，我们考虑设计一个自定义SQL-Like DSL语言的引擎框架APIQL，能实现如下要求：</p>
-<ol>
-<li>零成本 BFF 开发：服务端一次实现，后续无需迭代；</li>
-<li>前端接口调用标准化：可定义前端接口调用方式和规范，以适配服务端的执行机制；</li>
-<li>灵活的接口调用能力：可以由前端来决定对若干接口的串行、并行混合调用，并支持裁剪 JSON 结果；</li>
-<li>安全性：对前端一次性请求API的数量上限做整体限制；</li>
-<li>异常处理：合理的体现接口实际的返回结果。</li>
-</ol>
-<h1 id="三、APIQL语法定义"><a href="#三、APIQL语法定义" class="headerlink" title="三、APIQL语法定义"></a>三、APIQL语法定义</h1><table>
-
-<tr>
-<td>APIQL语句</td>
-<td>语法设计</td>
-<td>备注</td>
-</tr>
-
-<tr>
-<td>set table1 as /soa/10225/getHealth;
-<br>select *, (name, age) post from /soa/10225/getHealth where id = 15</td>
-<td><ul><li>*是查所有字段，括号内表示排除的字段</li> <li>from后面跟的支持完整的地址和相对路径的path</li>
-<li>where 字段后面是传的参数</li> <li>set设置别名，这样在sql中就可以直接写别名就好，改起来也方便</li></ul></td>
-<td>普通的APIQL</td>
-</tr>
-
-<tr>
-<td>select name, age post from /soa/10225/getHealth where id = 15</td>
-<td>select指定字段</td>
-<td> </td>
-</tr>
-
-<tr>
-<td>select user.name, age post from /soa/10225/getHealth where id = 15</td>
-<td>支持select多级字段</td>
-<td>user.name</td>
-</tr>
-
-<tr>
-<td>select name, age post from /soa/10225/getHealth as api1 where id = api2.id
-
-<p>join select id post from /soa/10225/getHealth as api2 where name = ‘Ray’</td></p>
-<td>使用子查询的方式，表示api的参数依赖<br>参数依赖关系使用join</td>
-<td></td>
-</tr>
-
-<tr>
-    <td>
-    select name, age post from /soa/10225/getHealth where id = 15;
-    <br>
-    select name, age post from /soa/10225/getHealth where id = 15
-    </td>
-    <td>支持多个接口并发查询，接口以分号隔开</td>
-    <td>结果聚合</td>
-</tr>
-
-<tr>
-<td>复杂的参数使用APIQLService的Post请求参数来承载，json形式</td>
-<td></td>
-<td></td>
-</tr>
-
-<tr>
-<td>如果多个并发的task依赖同一个task，中间层做一层缓存</td>
-<td></td>
-<td></td>
-</tr>
-
-</table>
-
-<h1 id="四、Task的数据结构的设计"><a href="#四、Task的数据结构的设计" class="headerlink" title="四、Task的数据结构的设计"></a>四、Task的数据结构的设计</h1><table>
-<thead>
-<tr>
-<th>task字段</th>
-<th>说明</th>
-<th>备注</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>List<String> conditions</td>
-<td>where后面的条件，解析成k=value的形式</td>
-<td>value可以是一个json字符串</td>
-</tr>
-<tr>
-<td>List<Task> dependencyTasks</td>
-<td>依赖的task的字段，应该以成员的形式放在task中，不依赖的默认并行</td>
-<td></td>
-</tr>
-<tr>
-<td>requestType</td>
-<td>httpMethod</td>
-<td>post还是get</td>
-</tr>
-<tr>
-<td>url</td>
-<td>就是接口地址</td>
-<td></td>
-</tr>
-<tr>
-<td>name</td>
-<td>接口的别名</td>
-<td></td>
-</tr>
-<tr>
-<td>includeFields</td>
-<td>需要的字段</td>
-<td></td>
-</tr>
-<tr>
-<td>excludeFields</td>
-<td>不需要的字段</td>
-<td></td>
-</tr>
-<tr>
-<td>result</td>
-<td>最终的json</td>
-<td></td>
-</tr>
-</tbody></table>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
 
 
 
